@@ -39,4 +39,4 @@
 
 - CODEGROUND_PROJECTS_FILE 可指定外部 JSON 注册表；默认使用本仓库 projects.json。deploy/compose.yaml 为独立网络，不依赖主页；Caddyfile.site 仅供原站点兼容发布。
 
-- GitHub 远程为 `neo-jack/codeground`，私有仓库、master 主分支；主分支以独立项目初始提交重建，旧历史保存在本机归档。上传默认仅 CI，部署需仓库变量 DEPLOY_ENABLED=true。
+- GitHub 远程为 `neo-jack/codeground`，公开仓库、master 主分支；主分支以独立项目初始提交重建，旧历史保存在本机归档。上传默认仅 CI，部署需仓库变量 DEPLOY_ENABLED=true。
