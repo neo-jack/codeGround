@@ -6,6 +6,8 @@
 
 ### Important files
 
+- `README.md` — GitHub 项目入口，沿用 miniReact 的简洁结构：项目简介、在线体验、快速开始、构建与验证；标题使用 GitHub 仓库名，只保留必要接入配置，不混入本机目录编号、迁移记录或提交历史说明。
+
 - `src/main.js` / `src/style.css` — 极简三栏文件树、Monaco 与右侧预览；文件树参考 VS Code 的紧凑层级、折叠与键盘导航，JS/TS/TSX 等使用彩色类型标识和说明 tooltip。
 - `src/runtime.js` — 浏览器隔离运行时，使用最小 Vite 依赖和自研 React 的路径映射；不执行仓库安装脚本。
 - `src/session-runtime.js` / `src/local-runtime.js` / `src/compile.worker.js` — WebContainers 网络失败时，自动切换到同浏览器的 esbuild WASM 编译；预览使用无同源权限的 sandbox srcdoc，并通过 CSP 禁止联网、导航和表单提交。
@@ -33,7 +35,7 @@
 - 前端构建 base 为 `./`，同一产物服务 `/React/` 和 `/codeground/<项目>/`；项目显示名和入口来自匿名只读响应，不再硬编码 React 路径。每个项目有独立快照缓存。
 - 支持 module script 入口的 HTML/JS/TS/JSX/TSX；WebContainers 支持配置中的依赖，本地 WASM 回退只支持项目模块、配置别名和内置 scheduler。不承诺任意框架、后端或未适配第三方库即插即用。
 - `.github/workflows/codeground-cicd.yml` 在 master 对相关路径的 push 后运行 Python、JS、部署回滚与受限镜像验证，构建并发布独立镜像；本地变更必须先提交推送。服务器 Secrets 与主页一致。
-- 新项目使用标准 `/codeground/<id>/` 无需改代理；新增顶层 routes 别名必须同步 Caddy/Nginx 规则。完整示例与边界见 README.md。
+- 新项目使用标准 `/codeground/<id>/` 无需改代理；新增顶层 routes 别名必须同步 Caddy/Nginx 规则。项目注册结构以 projects.json 为准，部署边界见 deploy/AGENTS.md。
 
 - CODEGROUND_PROJECTS_FILE 可指定外部 JSON 注册表；默认使用本仓库 projects.json。deploy/compose.yaml 为独立网络，不依赖主页；Caddyfile.site 仅供原站点兼容发布。
 
