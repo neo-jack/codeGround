@@ -1,0 +1,20 @@
+{
+  auto_https disable_redirects
+  admin off
+}
+
+{$PLAYGROUND_HOSTS:www.lanbinquan.top} {
+  tls {
+    issuer acme {
+      disable_http_challenge
+    }
+  }
+  encode zstd gzip
+  @react path /React /React/* /codeground /codeground/*
+  handle @react {
+    reverse_proxy playground:8091
+  }
+  handle {
+    reverse_proxy 100my-page:80
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "codeground",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@webcontainer/api": "1.6.4",
+    "esbuild-wasm": "0.25.5",
+    "monaco-editor": "0.52.2",
+    "scheduler": "0.23.2"
+  },
+  "devDependencies": {
+    "vite": "5.4.21"
+  }
+}

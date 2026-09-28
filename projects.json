@@ -1,0 +1,34 @@
+{
+  "defaultProject": "react",
+  "projects": {
+    "react": {
+      "label": "102my-react",
+      "repository": "neo-jack/102my-react",
+      "branch": "master",
+      "routes": ["/React"],
+      "includeRoots": ["demos", "packages", "script"],
+      "includeFiles": ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "tsconfig.json", "babel.config.js", "README.md", "LICENSE"],
+      "entryHtml": "demos/index.html",
+      "defaultFile": "demos/main.tsx",
+      "runtime": {
+        "root": "demos",
+        "jsxImportSource": "react",
+        "dependencies": {"vite": "5.4.21", "scheduler": "0.23.2"},
+        "define": {"__DEV__": "true"},
+        "aliases": [
+          {"find": "react/jsx-runtime", "replacement": ".codeground/jsx-runtime.ts"},
+          {"find": "react/jsx-dev-runtime", "replacement": "packages/react/jsx-dev-runtime.ts"},
+          {"find": "react-dom/client", "replacement": "packages/react-dom/index.ts"},
+          {"find": "react-dom", "replacement": "packages/react-dom"},
+          {"find": "react-reconciler", "replacement": "packages/react-reconciler"},
+          {"find": "react", "replacement": "packages/react"},
+          {"find": "shared", "replacement": "packages/shared"},
+          {"find": "hostConfig", "replacement": "packages/react-dom/src/hostConfig.ts"}
+        ],
+        "virtualFiles": {
+          ".codeground/jsx-runtime.ts": "export { jsxDEV as jsx, jsxDEV as jsxs, Fragment } from '../packages/react/jsx-dev-runtime';"
+        }
+      }
+    }
+  }
+}

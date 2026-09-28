@@ -1,0 +1,42 @@
+services:
+  playground:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: ${CODEGROUND_IMAGE:-102my-react-playground:local}
+    container_name: 102my-react-playground
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=16m']
+    mem_limit: 128m
+    memswap_limit: 128m
+    cpus: 0.5
+    pids_limit: 48
+    networks: [playground]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8091/healthz', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging: {driver: json-file, options: {max-size: 5m, max-file: '2'}}
+  https:
+    image: caddy:2.10.2-alpine
+    container_name: react-playground-https
+    restart: unless-stopped
+    environment:
+      PLAYGROUND_HOSTS: ${PLAYGROUND_HOSTS:-localhost}
+    ports: ['443:443', '443:443/udp']
+    volumes: ['./Caddyfile:/etc/caddy/Caddyfile:ro', 'tls:/data', 'caddy_config:/config']
+    networks: [playground]
+    mem_limit: 96m
+    memswap_limit: 96m
+    cpus: 0.5
+    pids_limit: 64
+    logging: {driver: json-file, options: {max-size: 5m, max-file: '2'}}
+networks:
+  playground:
+volumes:
+  tls:
+  caddy_config:

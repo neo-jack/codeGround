@@ -1,0 +1,108 @@
+name: Codeground CI/CD
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeground-server-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: npm ci
+        working-directory: .
+      - run: python -m unittest test_server.py
+        working-directory: .
+      - run: node --test test_runtime.mjs
+        working-directory: .
+      - run: |
+          bash -n .github/deploy/codeground.sh
+          node --test .github/deploy/codeground.test.mjs
+      - run: npm run build
+        working-directory: .
+      - name: Verify restricted container and generic routes
+        run: |
+          docker build -f deploy/Dockerfile -t codeground-check .
+          trap 'docker rm -f codeground-check' EXIT
+          docker run -d --name codeground-check --read-only --cap-drop ALL \
+            --security-opt no-new-privileges:true --memory 128m --memory-swap 128m \
+            --tmpfs /tmp:rw,noexec,nosuid,size=16m codeground-check
+          for attempt in $(seq 1 20); do
+            if docker exec codeground-check python -c 'import urllib.request; assert urllib.request.urlopen("http://127.0.0.1:8091/healthz").status == 200'; then break; fi
+            sleep 1
+          done
+          docker exec codeground-check python -c 'import urllib.request; r=urllib.request.urlopen("http://127.0.0.1:8091/codeground/react/"); assert r.status == 200; assert r.headers["Cross-Origin-Opener-Policy"] == "same-origin"; assert urllib.request.urlopen("http://127.0.0.1:8091/React/").status == 200'
+      - uses: actions/upload-artifact@v6
+        with:
+          name: codeground-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    needs: check
+    if: vars.DEPLOY_ENABLED == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check deployment secrets
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+        run: |
+          for name in SERVER_HOST SERVER_USER SERVER_PASSWORD; do
+            test -n "${!name}" || { echo "::error::Missing secret: $name"; exit 1; }
+          done
+      - uses: actions/download-artifact@v7
+        with:
+          name: codeground-dist
+          path: dist
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and publish Codeground
+        id: image
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/codeground"
+          docker build -f deploy/Dockerfile -t "$image:$GITHUB_SHA" -t "$image:latest" .
+          docker push "$image:$GITHUB_SHA"
+          docker push "$image:latest"
+          echo "ref=$image:$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+      - name: Update editor with health-checked rollback
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CODEGROUND_IMAGE: ${{ steps.image.outputs.ref }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: '22'
+          timeout: 30s
+          command_timeout: 15m
+          envs: GHCR_USER,GHCR_TOKEN,CODEGROUND_IMAGE
+          script_path: .github/deploy/codeground.sh

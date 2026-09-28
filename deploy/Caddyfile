@@ -1,0 +1,7 @@
+{
+  admin off
+}
+{$PLAYGROUND_HOSTS:localhost} {
+  encode zstd gzip
+  reverse_proxy playground:8091
+}

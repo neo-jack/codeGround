@@ -1,0 +1,11 @@
+*
+!server.py
+!dist/
+!dist/**
+!deploy/
+!deploy/Dockerfile
+
+!projects.json
+!deploy/Caddyfile
+
+!deploy/Caddyfile.site
