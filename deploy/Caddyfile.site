@@ -13,7 +13,7 @@
   redir /Ai /Ai/ 308
   redir /Guanlan /Ai/ 308
   handle_path /Guanlan/* {
-    redir /Ai{uri} 308
+    redir * /Ai{uri} 308
   }
   handle_path /Ai/* {
     reverse_proxy guanlan-studio:18112 {
