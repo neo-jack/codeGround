@@ -25,3 +25,6 @@
 - Caddyfile 与 compose.yaml 是通用独立入口，所有流量转发 playground；没有 homepage 外部网络。Caddyfile.site 仅由兼容 CI 镜像供原站点网关使用，不用于通用 Compose。
 
 - 根 .dockerignore 必须允许 deploy/Caddyfile.site，确保兼容发布镜像可构建；通用 Compose 挂载普通 Caddyfile。
+- `Caddyfile.site` 保留 `/Guanlan/` 与 `/GuanlanDify/` 的独立观澜服务代理，分别指向 HTTPS 共享网络内的 `guanlan-studio:18112`、`guanlan-dify-api:18113`；前者关闭 SSE 缓冲。应用由 `109my-aiproject` 维护，发布实验室时不能覆盖丢失这些路由。
+
+- AI 研究入口改为 `/Ai/`，`/Guanlan/` 保留路径跳转至 `/Ai/`，仍转发 guanlan-studio:18112。

@@ -10,6 +10,19 @@
     }
   }
   encode zstd gzip
+  redir /Ai /Ai/ 308
+  redir /Guanlan /Ai/ 308
+  handle_path /Guanlan/* {
+    redir /Ai{uri} 308
+  }
+  handle_path /Ai/* {
+    reverse_proxy guanlan-studio:18112 {
+      flush_interval -1
+    }
+  }
+  handle_path /GuanlanDify/* {
+    reverse_proxy guanlan-dify-api:18113
+  }
   @react path /React /React/* /codeground /codeground/*
   handle @react {
     reverse_proxy playground:8091
